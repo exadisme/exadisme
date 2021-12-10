@@ -1,30 +1,50 @@
 #!/bin/bash
-while true; do	
-	LOCALTIME=$(date | awk {'print $1 " " $2 " " $3 " " substr($4, 1, length($4)-3)'})
+while true; do
+        LOCALTIME=$(date | awk {'print $1 " " $2 " " $3 " " substr($4, 1, length($4)-3)'})
         DISKTOTAL=$(df -Ph | grep "/dev/mapper/cryptroot" | awk {'print $2'})
         DISKUSEDP=$(df -Ph | grep "/dev/mapper/cryptroot" | awk {'print $5'})
-	DISKUSED=$(df -Ph | grep "/dev/mapper/cryptroot" | awk {'print $3'})
-	MEM=$(free -h | awk '/^Mem:/ {print $3 "/" $2}')
-	SWAP=$(free -h | awk '/^Swap:/ {print $3 "/" $2}')
-	CPUTEMP=$(sensors | grep 'Package id 0:' | awk '{print substr($4,2)}')
-	BATTERY=$(cat /sys/class/power_supply/BAT0/capacity)
-	CPUFREQ=$(cpupower frequency-info | grep "asserted by call" | awk {'print $4'})'Ghz'
-	BATTERYSTAT=$(cat /sys/class/power_supply/BAT0/status)
-	UPTIME=$(uptime -p | awk '{$1=""; print $0}' )
+        DISKUSED=$(df -Ph | grep "/dev/mapper/cryptroot" | awk {'print $3'})
+        MEM=$(free -h | awk '/^Mem:/ {print $3 "/" $2}')
+        SWAP=$(free -h | awk '/^Swap:/ {print $3 "/" $2}')
+        CPUTEMP=$(sensors | grep 'Package id 0:' | awk '{print substr($4,2)}')
+        BATTERY=$(cat /sys/class/power_supply/BAT0/capacity)
+        CPUFREQ=$(cpupower frequency-info | grep "asserted by call" | awk {'print $4'})'Ghz'
+        BATTERYSTAT=$(cat /sys/class/power_supply/BAT0/status)
 
-	if [ $BATTERYSTAT = Charging ]
-	then
-	BATTERYSTATICON="▲"
-	
-	elif [ $BATTERYSTAT = Discharging ]
-	then
-	BATTERYSTATICON="▼"	
-	
-	elif [ $BATTERYSTAT = Full ]
-	then
-	BATTERYSTATICON="▇"
-	fi
+# Music Player
 
-xsetroot -name "$UPTIME | $DISKUSED/$DISKTOTAL $DISKUSEDP | $MEM $SWAP | $CPUFREQ $CPUTEMP | $LOCALTIME  [ $BATTERY%$BATTERYSTATICON ]"
+        MUSIC=$(cmus-remote -Q | grep 'status' | cut -d ' ' -f 2-)
+
+        if [ "$MUSIC" = "playing" ];
+        then
+        TITLE=$(cmus-remote -Q | grep title | cut -d ' ' -f 3-)
+        ARTIST=$(cmus-remote -Q | grep -e '[^m]artist' | cut -d ' ' -f 3-)
+        fi
+
+# Battery status icon
+
+        if [ $BATTERYSTAT = Charging ];
+        then
+        BATTERYSTATICON="▲"
+
+        elif [ $BATTERYSTAT = Discharging ];
+        then
+        BATTERYSTATICON="▼"
+
+        elif [ $BATTERYSTAT = Full ];
+        then
+        BATTERYSTATICON="▇"
+        fi
+
+# Output to xsetroot depending on wether music is playing
+
+        if [ "$MUSIC" != "playing" ] || [ "$MUSIC" = "cmus-remote: cmus is not running" ];
+        then
+        xsetroot -name "$DISKUSED/$DISKTOTAL $DISKUSEDP | $MEM $SWAP | $CPUFREQ $CPUTEMP | $LOCALTIME  [ $BATTERY%$BATTERYSTATICON ]"
+
+        elif [ "$MUSIC" = "playing" ];
+        then
+        xsetroot -name " $ARTIST - $TITLE | $DISKUSED/$DISKTOTAL $DISKUSEDP | $MEM $SWAP | $CPUFREQ $CPUTEMP | $LOCALTIME  [ $BATTERY%$BATTERYSTATICON ]"
+        fi
         sleep 8s
-done & 
+done &
