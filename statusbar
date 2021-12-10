@@ -1,4 +1,9 @@
 #!/bin/bash
+# Depends:
+# CPU frequency depends on cpupower
+# CPU temperature depends on sensors
+# Music player depends on cmus.
+
 while true; do
         LOCALTIME=$(date | awk {'print $1 " " $2 " " $3 " " substr($4, 1, length($4)-3)'})
         DISKTOTAL=$(df -Ph | grep "/dev/mapper/cryptroot" | awk {'print $2'})
