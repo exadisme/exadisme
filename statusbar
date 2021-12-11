@@ -4,7 +4,7 @@
 # CPU temperature depends on sensors
 # Music player depends on cmus.
 
-while true; do
+while true; do  
         LOCALTIME=$(date | awk {'print $1 " " $2 " " $3 " " substr($4, 1, length($4)-3)'})
         DISKTOTAL=$(df -Ph | grep "/dev/mapper/cryptroot" | awk {'print $2'})
         DISKUSEDP=$(df -Ph | grep "/dev/mapper/cryptroot" | awk {'print $5'})
@@ -16,40 +16,33 @@ while true; do
         CPUFREQ=$(cpupower frequency-info | grep "asserted by call" | awk {'print $4'})'Ghz'
         BATTERYSTAT=$(cat /sys/class/power_supply/BAT0/status)
 
-# Music Player
-
-        MUSIC=$(cmus-remote -Q | grep 'status' | cut -d ' ' -f 2-)
-
-        if [ "$MUSIC" = "playing" ];
-        then
-        TITLE=$(cmus-remote -Q | grep title | cut -d ' ' -f 3-)
-        ARTIST=$(cmus-remote -Q | grep -e '[^m]artist' | cut -d ' ' -f 3-)
-        fi
-
 # Battery status icon
 
         if [ $BATTERYSTAT = Charging ];
         then
         BATTERYSTATICON="▲"
-
+        
         elif [ $BATTERYSTAT = Discharging ];
         then
-        BATTERYSTATICON="▼"
-
+        BATTERYSTATICON="▼"     
+        
         elif [ $BATTERYSTAT = Full ];
         then
         BATTERYSTATICON="▇"
         fi
 
-# Output to xsetroot depending on wether music is playing
+# Music Player
 
-        if [ "$MUSIC" != "playing" ] || [ "$MUSIC" = "cmus-remote: cmus is not running" ];
+        MRUN=$(ps -a | grep cmus | awk '{print $4}')
+        if [ "$MRUN" = "cmus" ];
         then
+        TITLE=$(cmus-remote -Q | grep title | cut -d ' ' -f 3-)
+        ARTIST=$(cmus-remote -Q | grep -e '[^m]artist' | cut -d ' ' -f 3-)' -'
+        xsetroot -name "$ARTIST $TITLE | $DISKUSED/$DISKTOTAL $DISKUSEDP | $MEM $SWAP | $CPUFREQ $CPUTEMP | $LOCALTIME  [ $BATTERY%$BATTERYSTATICON ]"
+
+        else
         xsetroot -name "$DISKUSED/$DISKTOTAL $DISKUSEDP | $MEM $SWAP | $CPUFREQ $CPUTEMP | $LOCALTIME  [ $BATTERY%$BATTERYSTATICON ]"
-
-        elif [ "$MUSIC" = "playing" ];
-        then
-        xsetroot -name " $ARTIST - $TITLE | $DISKUSED/$DISKTOTAL $DISKUSEDP | $MEM $SWAP | $CPUFREQ $CPUTEMP | $LOCALTIME  [ $BATTERY%$BATTERYSTATICON ]"
         fi
+
         sleep 8s
 done &
