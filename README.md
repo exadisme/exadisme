@@ -1,6 +1,6 @@
 - 👋 Hi, I’m adam
-- 👀 I’m interested in GNU/linux, bash & rust
-- 🌱 I’m currently learning rust
+- 👀 I’m interested in GNU/linux, bash HTML, CSS, Javascript
+- 🌱 I’m currently learning HTML/CSS/Javascript
 
 
 <!---
